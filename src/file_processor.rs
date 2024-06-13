@@ -3,11 +3,19 @@ use std::io::{self, BufRead, BufReader};
 use std::sync::{Arc, Mutex};
 use std::thread;
 
-pub fn process_file(file_path: &str) -> io::Result<usize> {
+pub fn count_lines(file_path: &str) -> io::Result<usize> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
     let lines: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
-    let count = thread::available_parallelism()?.get();
+    let lines_count = lines.len();
+    let parallelism_count = thread::available_parallelism()?.get();
+
+    let count = if lines_count > parallelism_count {
+        parallelism_count
+    } else {
+        1
+    };
+
     let chunk_size = lines.len() / count;
     let line_count = Arc::new(Mutex::new(0));
     let mut handles = vec![];
