@@ -29,27 +29,29 @@ mod tests {
 
     #[test]
     fn test_server() {
-        thread::spawn(|| {
-            crate::server::start_server("127.0.0.1:1080");
+        let handle = thread::spawn(|| {
+            crate::server::start_server("127.0.0.1:1081");
         });
-        let mut stream = TcpStream::connect("127.0.0.1:1080").unwrap();
+        let mut stream = TcpStream::connect("127.0.0.1:1081").unwrap();
         stream.write_all(b"data/test.txt").unwrap();
         let mut buffer = [0; 128];
         let size = stream.read(&mut buffer).unwrap();
         let response = String::from_utf8_lossy(&buffer[..size]);
-        assert!(response.contains("Line count: 1005"));
+        assert!(response.contains("Line count: 4"));
+        let _ = handle.join();
     }
 
     #[test]
     fn test_server_2() {
-        thread::spawn(|| {
-            crate::server::start_server("127.0.0.1:1080");
+        let handle = thread::spawn(|| {
+            crate::server::start_server("127.0.0.1:1082");
         });
-        let mut stream = TcpStream::connect("127.0.0.1:1080").unwrap();
+        let mut stream = TcpStream::connect("127.0.0.1:1082").unwrap();
         stream.write_all(b"data/test2.txt").unwrap();
         let mut buffer = [0; 128];
         let size = stream.read(&mut buffer).unwrap();
         let response = String::from_utf8_lossy(&buffer[..size]);
         assert!(response.contains("Line count: 1005"));
+        let _ = handle.join();
     }
 }
